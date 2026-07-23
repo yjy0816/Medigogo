@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medigogo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; }
+    header { background: #1a73e8; color: #fff; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+    header h1 { font-size: 1.5rem; }
+    nav { display: flex; gap: 0.5rem; margin-left: auto; }
+    nav button { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 0.5rem 1.2rem; border-radius: 4px; cursor: pointer; font-size: 0.95rem; transition: background 0.2s; }
+    nav button:hover, nav button.active { background: rgba(255,255,255,0.4); }
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .toolbar h2 { font-size: 1.3rem; }
+    .btn { background: #1a73e8; color: #fff; border: none; padding: 0.5rem 1.1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+    .btn:hover { background: #1558b0; }
+    .btn-danger { background: #e53935; }
+    .btn-danger:hover { background: #b71c1c; }
+    .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e0e0e0; font-size: 0.9rem; }
+    th { background: #e8f0fe; font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.78rem; font-weight: 600; text-transform: capitalize; }
+    .badge-scheduled { background: #e3f2fd; color: #1565c0; }
+    .badge-confirmed { background: #e8f5e9; color: #2e7d32; }
+    .badge-completed { background: #f3e5f5; color: #6a1b9a; }
+    .badge-cancelled { background: #fce4ec; color: #c62828; }
+    .badge-no_show   { background: #fff3e0; color: #e65100; }
+    .badge-issued    { background: #e3f2fd; color: #1565c0; }
+    .badge-dispensed { background: #e8f5e9; color: #2e7d32; }
+    .badge-expired   { background: #fff3e0; color: #e65100; }
+    /* Modal */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; justify-content: center; align-items: center; }
+    .overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 8px; padding: 2rem; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal h3 { margin-bottom: 1.2rem; font-size: 1.15rem; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #555; }
+    label { display: block; margin-bottom: 0.2rem; font-size: 0.85rem; font-weight: 600; }
+    input, select, textarea { width: 100%; padding: 0.5rem 0.7rem; margin-bottom: 0.9rem; border: 1px solid #bdbdbd; border-radius: 4px; font-size: 0.9rem; }
+    textarea { height: 70px; resize: vertical; }
+    .form-row { display: flex; gap: 0.8rem; }
+    .form-row > div { flex: 1; }
+    .alert { background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 0.7rem 1rem; margin-bottom: 1rem; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🏥 Medigogo</h1>
+  <nav>
+    <button class="active" onclick="showTab('patients')">Patients</button>
+    <button onclick="showTab('appointments')">Appointments</button>
+    <button onclick="showTab('records')">Medical Records</button>
+    <button onclick="showTab('prescriptions')">Prescriptions</button>
+  </nav>
+</header>
+
+<main>
+  <!-- PATIENTS -->
+  <section id="tab-patients" class="section active">
+    <div class="toolbar"><h2>Patients</h2><button class="btn" onclick="openPatientModal()">+ New Patient</button></div>
+    <table id="patients-table">
+      <thead><tr><th>Name</th><th>DOB</th><th>Gender</th><th>Phone</th><th>Blood Type</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- APPOINTMENTS -->
+  <section id="tab-appointments" class="section">
+    <div class="toolbar"><h2>Appointments</h2><button class="btn" onclick="openApptModal()">+ New Appointment</button></div>
+    <table id="appointments-table">
+      <thead><tr><th>Patient ID</th><th>Doctor</th><th>Department</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- RECORDS -->
+  <section id="tab-records" class="section">
+    <div class="toolbar"><h2>Medical Records</h2><button class="btn" onclick="openRecordModal()">+ New Record</button></div>
+    <table id="records-table">
+      <thead><tr><th>Patient ID</th><th>Visit Date</th><th>Doctor</th><th>Diagnosis</th><th>Treatment</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- PRESCRIPTIONS -->
+  <section id="tab-prescriptions" class="section">
+    <div class="toolbar"><h2>Prescriptions</h2><button class="btn" onclick="openRxModal()">+ New Prescription</button></div>
+    <table id="prescriptions-table">
+      <thead><tr><th>Patient ID</th><th>Doctor</th><th>Medications</th><th>Issued</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<!-- Patient Modal -->
+<div class="overlay" id="patient-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('patient-modal')">✕</button>
+    <h3 id="patient-modal-title">New Patient</h3>
+    <input type="hidden" id="patient-id" />
+    <div class="form-row">
+      <div><label>First Name *</label><input id="p-firstName" /></div>
+      <div><label>Last Name *</label><input id="p-lastName" /></div>
+    </div>
+    <div class="form-row">
+      <div><label>Date of Birth</label><input type="date" id="p-dob" /></div>
+      <div><label>Gender</label>
+        <select id="p-gender"><option value="other">Other</option><option value="male">Male</option><option value="female">Female</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label>Phone</label><input id="p-phone" /></div>
+      <div><label>Blood Type</label><input id="p-bloodType" placeholder="e.g. A+" /></div>
+    </div>
+    <label>Email</label><input type="email" id="p-email" />
+    <label>Address</label><input id="p-address" />
+    <label>Notes</label><textarea id="p-notes"></textarea>
+    <button class="btn" onclick="savePatient()">Save</button>
+  </div>
+</div>
+
+<!-- Appointment Modal -->
+<div class="overlay" id="appt-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('appt-modal')">✕</button>
+    <h3 id="appt-modal-title">New Appointment</h3>
+    <input type="hidden" id="appt-id" />
+    <label>Patient ID *</label><input id="a-patientId" />
+    <div class="form-row">
+      <div><label>Doctor Name *</label><input id="a-doctorName" /></div>
+      <div><label>Department</label><input id="a-department" placeholder="General" /></div>
+    </div>
+    <label>Appointment Date *</label><input type="datetime-local" id="a-date" />
+    <label>Reason</label><input id="a-reason" />
+    <label>Notes</label><textarea id="a-notes"></textarea>
+    <button class="btn" onclick="saveAppt()">Save</button>
+  </div>
+</div>
+
+<!-- Status Modal (shared for appointments and prescriptions) -->
+<div class="overlay" id="status-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('status-modal')">✕</button>
+    <h3>Update Status</h3>
+    <input type="hidden" id="status-resource-id" />
+    <input type="hidden" id="status-resource-type" />
+    <label>New Status</label>
+    <select id="status-value"></select>
+    <br/>
+    <button class="btn" onclick="saveStatus()">Update</button>
+  </div>
+</div>
+
+<!-- Medical Record Modal -->
+<div class="overlay" id="record-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('record-modal')">✕</button>
+    <h3 id="record-modal-title">New Medical Record</h3>
+    <input type="hidden" id="record-id" />
+    <label>Patient ID *</label><input id="r-patientId" />
+    <div class="form-row">
+      <div><label>Doctor</label><input id="r-doctorName" /></div>
+      <div><label>Visit Date</label><input type="datetime-local" id="r-visitDate" /></div>
+    </div>
+    <label>Diagnosis</label><input id="r-diagnosis" />
+    <label>Treatment</label><input id="r-treatment" />
+    <label>Notes</label><textarea id="r-notes"></textarea>
+    <button class="btn" onclick="saveRecord()">Save</button>
+  </div>
+</div>
+
+<!-- Prescription Modal -->
+<div class="overlay" id="rx-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('rx-modal')">✕</button>
+    <h3 id="rx-modal-title">New Prescription</h3>
+    <input type="hidden" id="rx-id" />
+    <div class="form-row">
+      <div><label>Patient ID *</label><input id="rx-patientId" /></div>
+      <div><label>Doctor Name *</label><input id="rx-doctorName" /></div>
+    </div>
+    <div class="form-row">
+      <div><label>Issued Date</label><input type="datetime-local" id="rx-issuedDate" /></div>
+      <div><label>Expiry Date</label><input type="date" id="rx-expiryDate" /></div>
+    </div>
+    <label>Medications (one per line: name, dosage, frequency, days)</label>
+    <textarea id="rx-medications" placeholder="Aspirin, 100mg, daily, 30"></textarea>
+    <label>Notes</label><textarea id="rx-notes"></textarea>
+    <button class="btn" onclick="saveRx()">Save</button>
+  </div>
+</div>
+
+<script>
+  const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function showTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('nav button')[['patients','appointments','records','prescriptions'].indexOf(name)].classList.add('active');
+    if (name === 'patients') loadPatients();
+    if (name === 'appointments') loadAppointments();
+    if (name === 'records') loadRecords();
+    if (name === 'prescriptions') loadPrescriptions();
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  /* ── Patients ──────────────────────────────────── */
+  async function loadPatients() {
+    const data = await fetch('/api/patients').then(r => r.json());
+    const tbody = document.querySelector('#patients-table tbody');
+    tbody.innerHTML = data.map(p => `<tr>
+      <td>${esc(p.firstName)} ${esc(p.lastName)}</td>
+      <td>${esc(p.dateOfBirth ?? '')}</td>
+      <td>${esc(p.gender)}</td>
+      <td>${esc(p.phone)}</td>
+      <td>${esc(p.bloodType)}</td>
+      <td>
+        <button class="btn btn-sm" onclick="editPatient('${esc(p.id)}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deletePatient('${esc(p.id)}')">Del</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#999">No patients</td></tr>';
+  }
+
+  function openPatientModal(p = null) {
+    document.getElementById('patient-modal-title').textContent = p ? 'Edit Patient' : 'New Patient';
+    document.getElementById('patient-id').value = p?.id ?? '';
+    document.getElementById('p-firstName').value = p?.firstName ?? '';
+    document.getElementById('p-lastName').value = p?.lastName ?? '';
+    document.getElementById('p-dob').value = p?.dateOfBirth ?? '';
+    document.getElementById('p-gender').value = p?.gender ?? 'other';
+    document.getElementById('p-phone').value = p?.phone ?? '';
+    document.getElementById('p-bloodType').value = p?.bloodType ?? '';
+    document.getElementById('p-email').value = p?.email ?? '';
+    document.getElementById('p-address').value = p?.address ?? '';
+    document.getElementById('p-notes').value = p?.notes ?? '';
+    openModal('patient-modal');
+  }
+
+  async function editPatient(id) {
+    const p = await fetch('/api/patients/' + id).then(r => r.json());
+    openPatientModal(p);
+  }
+
+  async function savePatient() {
+    const id = document.getElementById('patient-id').value;
+    const body = {
+      firstName: document.getElementById('p-firstName').value.trim(),
+      lastName: document.getElementById('p-lastName').value.trim(),
+      dateOfBirth: document.getElementById('p-dob').value || null,
+      gender: document.getElementById('p-gender').value,
+      phone: document.getElementById('p-phone').value.trim(),
+      bloodType: document.getElementById('p-bloodType').value.trim(),
+      email: document.getElementById('p-email').value.trim(),
+      address: document.getElementById('p-address').value.trim(),
+      notes: document.getElementById('p-notes').value.trim(),
+    };
+    if (!body.firstName || !body.lastName) { alert('First and last name are required.'); return; }
+    const url = id ? '/api/patients/' + id : '/api/patients';
+    const method = id ? 'PUT' : 'POST';
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    closeModal('patient-modal');
+    loadPatients();
+  }
+
+  async function deletePatient(id) {
+    if (!confirm('Delete this patient?')) return;
+    await fetch('/api/patients/' + id, { method: 'DELETE' });
+    loadPatients();
+  }
+
+  /* ── Appointments ──────────────────────────────── */
+  async function loadAppointments() {
+    const data = await fetch('/api/appointments').then(r => r.json());
+    const tbody = document.querySelector('#appointments-table tbody');
+    tbody.innerHTML = data.map(a => `<tr>
+      <td>${esc(a.patientId)}</td>
+      <td>${esc(a.doctorName)}</td>
+      <td>${esc(a.department)}</td>
+      <td>${esc(a.appointmentDate)}</td>
+      <td><span class="badge badge-${esc(a.status)}">${esc(a.status)}</span></td>
+      <td>
+        <button class="btn btn-sm" onclick="editAppt('${esc(a.id)}')">Edit</button>
+        <button class="btn btn-sm" onclick="openStatusModal('${esc(a.id)}','appointment')">Status</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteAppt('${esc(a.id)}')">Del</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#999">No appointments</td></tr>';
+  }
+
+  function openApptModal(a = null) {
+    document.getElementById('appt-modal-title').textContent = a ? 'Edit Appointment' : 'New Appointment';
+    document.getElementById('appt-id').value = a?.id ?? '';
+    document.getElementById('a-patientId').value = a?.patientId ?? '';
+    document.getElementById('a-doctorName').value = a?.doctorName ?? '';
+    document.getElementById('a-department').value = a?.department ?? '';
+    document.getElementById('a-date').value = a?.appointmentDate ? a.appointmentDate.slice(0,16) : '';
+    document.getElementById('a-reason').value = a?.reason ?? '';
+    document.getElementById('a-notes').value = a?.notes ?? '';
+    openModal('appt-modal');
+  }
+
+  async function editAppt(id) {
+    const a = await fetch('/api/appointments/' + id).then(r => r.json());
+    openApptModal(a);
+  }
+
+  async function saveAppt() {
+    const id = document.getElementById('appt-id').value;
+    const body = {
+      patientId: document.getElementById('a-patientId').value.trim(),
+      doctorName: document.getElementById('a-doctorName').value.trim(),
+      department: document.getElementById('a-department').value.trim() || 'General',
+      appointmentDate: document.getElementById('a-date').value,
+      reason: document.getElementById('a-reason').value.trim(),
+      notes: document.getElementById('a-notes').value.trim(),
+    };
+    if (!body.patientId || !body.doctorName || !body.appointmentDate) { alert('Patient ID, doctor name, and date are required.'); return; }
+    const url = id ? '/api/appointments/' + id : '/api/appointments';
+    const method = id ? 'PUT' : 'POST';
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    closeModal('appt-modal');
+    loadAppointments();
+  }
+
+  async function deleteAppt(id) {
+    if (!confirm('Delete this appointment?')) return;
+    await fetch('/api/appointments/' + id, { method: 'DELETE' });
+    loadAppointments();
+  }
+
+  /* ── Medical Records ───────────────────────────── */
+  async function loadRecords() {
+    const data = await fetch('/api/records').then(r => r.json());
+    const tbody = document.querySelector('#records-table tbody');
+    tbody.innerHTML = data.map(r => `<tr>
+      <td>${esc(r.patientId)}</td>
+      <td>${esc(r.visitDate)}</td>
+      <td>${esc(r.doctorName)}</td>
+      <td>${esc(r.diagnosis)}</td>
+      <td>${esc(r.treatment)}</td>
+      <td>
+        <button class="btn btn-sm" onclick="editRecord('${esc(r.id)}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRecord('${esc(r.id)}')">Del</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#999">No records</td></tr>';
+  }
+
+  function openRecordModal(r = null) {
+    document.getElementById('record-modal-title').textContent = r ? 'Edit Record' : 'New Medical Record';
+    document.getElementById('record-id').value = r?.id ?? '';
+    document.getElementById('r-patientId').value = r?.patientId ?? '';
+    document.getElementById('r-doctorName').value = r?.doctorName ?? '';
+    document.getElementById('r-visitDate').value = r?.visitDate ? r.visitDate.slice(0,16) : '';
+    document.getElementById('r-diagnosis').value = r?.diagnosis ?? '';
+    document.getElementById('r-treatment').value = r?.treatment ?? '';
+    document.getElementById('r-notes').value = r?.notes ?? '';
+    openModal('record-modal');
+  }
+
+  async function editRecord(id) {
+    const r = await fetch('/api/records/' + id).then(res => res.json());
+    openRecordModal(r);
+  }
+
+  async function saveRecord() {
+    const id = document.getElementById('record-id').value;
+    const body = {
+      patientId: document.getElementById('r-patientId').value.trim(),
+      doctorName: document.getElementById('r-doctorName').value.trim(),
+      visitDate: document.getElementById('r-visitDate').value || new Date().toISOString(),
+      diagnosis: document.getElementById('r-diagnosis').value.trim(),
+      treatment: document.getElementById('r-treatment').value.trim(),
+      notes: document.getElementById('r-notes').value.trim(),
+    };
+    if (!body.patientId) { alert('Patient ID is required.'); return; }
+    const url = id ? '/api/records/' + id : '/api/records';
+    const method = id ? 'PUT' : 'POST';
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    closeModal('record-modal');
+    loadRecords();
+  }
+
+  async function deleteRecord(id) {
+    if (!confirm('Delete this record?')) return;
+    await fetch('/api/records/' + id, { method: 'DELETE' });
+    loadRecords();
+  }
+
+  /* ── Prescriptions ─────────────────────────────── */
+  async function loadPrescriptions() {
+    const data = await fetch('/api/prescriptions').then(r => r.json());
+    const tbody = document.querySelector('#prescriptions-table tbody');
+    tbody.innerHTML = data.map(p => `<tr>
+      <td>${esc(p.patientId)}</td>
+      <td>${esc(p.doctorName)}</td>
+      <td>${esc((p.medications || []).map(m => m.name).join(', '))}</td>
+      <td>${esc(p.issuedDate)}</td>
+      <td><span class="badge badge-${esc(p.status)}">${esc(p.status)}</span></td>
+      <td>
+        <button class="btn btn-sm" onclick="editRx('${esc(p.id)}')">Edit</button>
+        <button class="btn btn-sm" onclick="openStatusModal('${esc(p.id)}','prescription')">Status</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRx('${esc(p.id)}')">Del</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#999">No prescriptions</td></tr>';
+  }
+
+  function openRxModal(p = null) {
+    document.getElementById('rx-modal-title').textContent = p ? 'Edit Prescription' : 'New Prescription';
+    document.getElementById('rx-id').value = p?.id ?? '';
+    document.getElementById('rx-patientId').value = p?.patientId ?? '';
+    document.getElementById('rx-doctorName').value = p?.doctorName ?? '';
+    document.getElementById('rx-issuedDate').value = p?.issuedDate ? p.issuedDate.slice(0,16) : '';
+    document.getElementById('rx-expiryDate').value = p?.expiryDate ?? '';
+    document.getElementById('rx-medications').value = (p?.medications ?? []).map(m => `${m.name}, ${m.dosage}, ${m.frequency}, ${m.durationDays}`).join('\n');
+    document.getElementById('rx-notes').value = p?.notes ?? '';
+    openModal('rx-modal');
+  }
+
+  async function editRx(id) {
+    const p = await fetch('/api/prescriptions/' + id).then(r => r.json());
+    openRxModal(p);
+  }
+
+  function parseMedications(text) {
+    return text.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+      const [name, dosage, frequency, durationDays] = line.split(',').map(s => s.trim());
+      return { name: name || '', dosage: dosage || '', frequency: frequency || '', durationDays: parseInt(durationDays) || 0 };
+    });
+  }
+
+  async function saveRx() {
+    const id = document.getElementById('rx-id').value;
+    const body = {
+      patientId: document.getElementById('rx-patientId').value.trim(),
+      doctorName: document.getElementById('rx-doctorName').value.trim(),
+      issuedDate: document.getElementById('rx-issuedDate').value || new Date().toISOString(),
+      expiryDate: document.getElementById('rx-expiryDate').value || null,
+      medications: parseMedications(document.getElementById('rx-medications').value),
+      notes: document.getElementById('rx-notes').value.trim(),
+    };
+    if (!body.patientId || !body.doctorName) { alert('Patient ID and doctor name are required.'); return; }
+    const url = id ? '/api/prescriptions/' + id : '/api/prescriptions';
+    const method = id ? 'PUT' : 'POST';
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    closeModal('rx-modal');
+    loadPrescriptions();
+  }
+
+  async function deleteRx(id) {
+    if (!confirm('Delete this prescription?')) return;
+    await fetch('/api/prescriptions/' + id, { method: 'DELETE' });
+    loadPrescriptions();
+  }
+
+  /* ── Shared Status Modal ───────────────────────── */
+  const STATUS_OPTIONS = {
+    appointment: ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'],
+    prescription: ['issued', 'dispensed', 'expired', 'cancelled'],
+  };
+
+  function openStatusModal(id, type) {
+    document.getElementById('status-resource-id').value = id;
+    document.getElementById('status-resource-type').value = type;
+    const sel = document.getElementById('status-value');
+    sel.innerHTML = STATUS_OPTIONS[type].map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    openModal('status-modal');
+  }
+
+  async function saveStatus() {
+    const id = document.getElementById('status-resource-id').value;
+    const type = document.getElementById('status-resource-type').value;
+    const status = document.getElementById('status-value').value;
+    const endpoint = type === 'appointment' ? '/api/appointments/' : '/api/prescriptions/';
+    await fetch(endpoint + id + '/status', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    closeModal('status-modal');
+    if (type === 'appointment') loadAppointments();
+    else loadPrescriptions();
+  }
+
+  // Initial load
+  loadPatients();
+</script>
+</body>
+</html>
