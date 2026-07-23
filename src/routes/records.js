@@ -4,11 +4,9 @@ const express = require('express');
 const router = express.Router();
 const Record = require('../models/record');
 
-// GET /api/records?patientId=
+// GET /api/records
 router.get('/', (req, res) => {
-  const { patientId } = req.query;
-  const results = patientId ? Record.getByPatient(patientId) : Record.getAll();
-  res.json(results);
+  res.json(Record.getAll());
 });
 
 // GET /api/records/:id

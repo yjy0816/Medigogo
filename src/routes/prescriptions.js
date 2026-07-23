@@ -4,12 +4,10 @@ const express = require('express');
 const router = express.Router();
 const Prescription = require('../models/prescription');
 
-// GET /api/prescriptions?patientId=&status=
+// GET /api/prescriptions?status=
 router.get('/', (req, res) => {
-  const { patientId, status } = req.query;
-  let results = Prescription.getAll();
-  if (patientId) results = results.filter((p) => p.patientId === patientId);
-  if (status) results = results.filter((p) => p.status === status);
+  const { status } = req.query;
+  const results = status ? Prescription.getByStatus(status) : Prescription.getAll();
   res.json(results);
 });
 

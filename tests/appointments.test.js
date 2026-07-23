@@ -26,21 +26,29 @@ describe('Appointments API', () => {
       expect(res.body).toEqual([]);
     });
 
-    it('filters by patientId', async () => {
-      makeAppt({ patientId: 'p-001' });
-      makeAppt({ patientId: 'p-002' });
-      const res = await request(app).get('/api/appointments?patientId=p-001');
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(1);
-      expect(res.body[0].patientId).toBe('p-001');
-    });
-
     it('filters by status', async () => {
       makeAppt();
       Appointment.updateStatus(makeAppt().id, 'confirmed');
       const res = await request(app).get('/api/appointments?status=confirmed');
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(1);
+    });
+  });
+
+  describe('GET /api/patients/:patientId/appointments (nested)', () => {
+    it('returns appointments for a specific patient', async () => {
+      makeAppt({ patientId: 'p-001' });
+      makeAppt({ patientId: 'p-002' });
+      const res = await request(app).get('/api/patients/p-001/appointments');
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].patientId).toBe('p-001');
+    });
+
+    it('returns empty array for patient with no appointments', async () => {
+      const res = await request(app).get('/api/patients/nobody/appointments');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
     });
   });
 

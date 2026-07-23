@@ -29,14 +29,22 @@ describe('Medical Records API', () => {
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(2);
     });
+  });
 
-    it('filters by patientId', async () => {
+  describe('GET /api/patients/:patientId/records (nested)', () => {
+    it('filters records by patientId via nested route', async () => {
       makeRecord({ patientId: 'p-001' });
       makeRecord({ patientId: 'p-002' });
-      const res = await request(app).get('/api/records?patientId=p-001');
+      const res = await request(app).get('/api/patients/p-001/records');
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(1);
       expect(res.body[0].patientId).toBe('p-001');
+    });
+
+    it('returns empty array for patient with no records', async () => {
+      const res = await request(app).get('/api/patients/nobody/records');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
     });
   });
 

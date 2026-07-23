@@ -3,6 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const Patient = require('../models/patient');
+const Appointment = require('../models/appointment');
+const Record = require('../models/record');
+const Prescription = require('../models/prescription');
 
 // GET /api/patients
 router.get('/', (req, res) => {
@@ -37,6 +40,21 @@ router.delete('/:id', (req, res) => {
   const removed = Patient.remove(req.params.id);
   if (!removed) return res.status(404).json({ error: 'Patient not found' });
   res.status(204).send();
+});
+
+// GET /api/patients/:patientId/appointments
+router.get('/:patientId/appointments', (req, res) => {
+  res.json(Appointment.getByPatient(req.params.patientId));
+});
+
+// GET /api/patients/:patientId/records
+router.get('/:patientId/records', (req, res) => {
+  res.json(Record.getByPatient(req.params.patientId));
+});
+
+// GET /api/patients/:patientId/prescriptions
+router.get('/:patientId/prescriptions', (req, res) => {
+  res.json(Prescription.getByPatient(req.params.patientId));
 });
 
 module.exports = router;

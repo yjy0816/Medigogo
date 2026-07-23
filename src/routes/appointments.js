@@ -4,12 +4,10 @@ const express = require('express');
 const router = express.Router();
 const Appointment = require('../models/appointment');
 
-// GET /api/appointments?patientId=&status=
+// GET /api/appointments?status=
 router.get('/', (req, res) => {
-  const { patientId, status } = req.query;
-  let results = Appointment.getAll();
-  if (patientId) results = results.filter((a) => a.patientId === patientId);
-  if (status) results = results.filter((a) => a.status === status);
+  const { status } = req.query;
+  const results = status ? Appointment.getByStatus(status) : Appointment.getAll();
   res.json(results);
 });
 

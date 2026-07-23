@@ -22,21 +22,29 @@ describe('Prescriptions API', () => {
       expect(res.body).toEqual([]);
     });
 
-    it('filters by patientId', async () => {
-      makeRx({ patientId: 'p-001' });
-      makeRx({ patientId: 'p-002' });
-      const res = await request(app).get('/api/prescriptions?patientId=p-001');
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(1);
-      expect(res.body[0].patientId).toBe('p-001');
-    });
-
     it('filters by status', async () => {
       makeRx();
       Prescription.updateStatus(makeRx().id, 'dispensed');
       const res = await request(app).get('/api/prescriptions?status=dispensed');
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(1);
+    });
+  });
+
+  describe('GET /api/patients/:patientId/prescriptions (nested)', () => {
+    it('returns prescriptions for a specific patient', async () => {
+      makeRx({ patientId: 'p-001' });
+      makeRx({ patientId: 'p-002' });
+      const res = await request(app).get('/api/patients/p-001/prescriptions');
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].patientId).toBe('p-001');
+    });
+
+    it('returns empty array for patient with no prescriptions', async () => {
+      const res = await request(app).get('/api/patients/nobody/prescriptions');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
     });
   });
 
