@@ -42,19 +42,19 @@ router.delete('/:id', (req, res) => {
   res.status(204).send();
 });
 
-// GET /api/patients/:patientId/appointments
-router.get('/:patientId/appointments', (req, res) => {
-  res.json(Appointment.getByPatient(req.params.patientId));
+// GET /api/patients/:id/appointments
+router.get('/:id/appointments', (req, res) => {
+  res.json(Appointment.getByPatient(req.params.id));
 });
 
-// GET /api/patients/:patientId/records
-router.get('/:patientId/records', (req, res) => {
-  res.json(Record.getByPatient(req.params.patientId));
+// GET /api/patients/:id/records
+router.get('/:id/records', (req, res) => {
+  res.json(Record.getByPatient(req.params.id));
 });
 
-// GET /api/patients/:patientId/prescriptions
-router.get('/:patientId/prescriptions', (req, res) => {
-  res.json(Prescription.getByPatient(req.params.patientId));
+// GET /api/patients/:id/prescriptions
+router.get('/:id/prescriptions', (req, res) => {
+  res.json(Prescription.getByPatient(req.params.id));
 });
 
 module.exports = router;

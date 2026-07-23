@@ -59,4 +59,4 @@ npm run dev        # auto-restart on file change
 npm test
 ```
 
-59 Jest + Supertest tests covering CRUD, status transitions, `400` validation, and `404` not-found paths across all four modules.
+62 Jest + Supertest tests covering CRUD, status transitions, `400` validation, and `404` not-found paths across all four modules.
