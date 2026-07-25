@@ -15,6 +15,7 @@ import AdminPage from "./pages/AdminPage";
 import BasicInfoPage from "./pages/BasicInfoPage";
 import DashboardPage from "./pages/DashboardPage";
 import InboundPage from "./pages/InboundPage";
+import IntegratedStockPage from "./pages/IntegratedStockPage";
 import InventoryPage from "./pages/InventoryPage";
 import LoginPage from "./pages/LoginPage";
 import OrderDeliveryPage from "./pages/OrderDeliveryPage";
@@ -166,6 +167,8 @@ function App() {
                         return <InboundPage />;
                     case "outboundManagement":
                         return <OutboundPage />;
+                    case "integratedStockControl":
+                        return <IntegratedStockPage />;
                     default:
                         return <InventoryPage />;
                 }

@@ -99,6 +99,11 @@ export const stockControlMenuItems: StockControlMenuItem[] = [
         label: "출고관리",
         description: "출고 지시와 출하 진행",
     },
+    {
+        key: "integratedStockControl",
+        label: "입출재고통합",
+        description: "입고/출고/재고를 통합 모니터링",
+    },
 ];
 
 export const orderDeliveryMenuItems: OrderDeliveryMenuItem[] = [

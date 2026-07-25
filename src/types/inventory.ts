@@ -36,7 +36,11 @@ export type BasicInfoMenuItem = {
     description: string;
 };
 
-export type StockControlSubSection = "inventoryStatus" | "inboundManagement" | "outboundManagement";
+export type StockControlSubSection =
+    | "inventoryStatus"
+    | "inboundManagement"
+    | "outboundManagement"
+    | "integratedStockControl";
 
 export type StockControlMenuItem = {
     key: StockControlSubSection;
