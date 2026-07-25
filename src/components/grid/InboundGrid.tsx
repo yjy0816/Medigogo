@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useState} from "react";
 import {AgGridReact} from "ag-grid-react";
-import {getOrders} from "../api/orderApi";
+import {getInbound} from "../api/inboundApi";
 import type {SearchCondition} from "../../types/search";
 import type { ColDef } from "ag-grid-community";
 
@@ -42,7 +42,7 @@ const columnDefs: ColDef<Item>[] = [
 const search = async(condition:SearchCondition)=>{
 
     const data =
-        await getOrders(condition);
+        await getInbound(condition);
     setRowData(data);
 };
 

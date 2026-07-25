@@ -11,7 +11,13 @@ export interface SearchFormRef {
 }
 
 
-const SearchForm = forwardRef<SearchFormRef>((_, ref)=>{
+interface SearchFormProps {
+    onSearch: () => Promise<void>;
+}
+
+
+
+const SearchForm = forwardRef<SearchFormProps ,SearchFormRef>((props, ref)=>{
 
 
 
@@ -191,6 +197,14 @@ const SearchForm = forwardRef<SearchFormRef>((_, ref)=>{
 
                         />
                     </label>
+
+                    <button
+                            type="button"
+                            className="customer-action-button is-primary"
+                            onClick={props.onSearch}
+                        >
+                            조회
+                        </button>
                    
 
                 </div>

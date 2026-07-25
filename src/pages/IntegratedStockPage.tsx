@@ -34,8 +34,7 @@ return (
 
 <>
 
-<SearchForm ref={searchFormRef}/>
-<Toolbar onSearch={handleSearch} />
+<SearchForm ref={searchFormRef}  onSearch={handleSearch} />
 <InboundGrid ref={InboundGridRef} />
 </>
 

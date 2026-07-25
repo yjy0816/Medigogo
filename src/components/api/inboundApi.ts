@@ -1,7 +1,7 @@
 import type {SearchCondition} from "../../types/search";
 
 
-export const getOrders = async(condition:SearchCondition)=>{
+export const getInbound = async(condition:SearchCondition)=>{
 
 
     return [
