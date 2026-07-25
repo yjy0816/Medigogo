@@ -17,7 +17,7 @@ interface SearchFormProps {
 
 
 
-const SearchForm = forwardRef<SearchFormProps ,SearchFormRef>((props, ref)=>{
+const SearchForm = forwardRef<SearchFormRef,SearchFormProps>((props, ref)=>{
 
 
 
@@ -51,11 +51,11 @@ const SearchForm = forwardRef<SearchFormProps ,SearchFormRef>((props, ref)=>{
 
 
     const changeDate = (name:string, date:Date[]) => {
-
+        
         const value = date[0]
-            ? date[0].toISOString().slice(0,10)
+            ? formatDate(date[0])
             : "";
-
+      
         setCondition(prev => ({
             ...prev,
             [name]: value
@@ -85,7 +85,7 @@ const SearchForm = forwardRef<SearchFormProps ,SearchFormRef>((props, ref)=>{
 
     const getCondition = ()=>{
 
-         alert(JSON.stringify(condition));
+         //alert(JSON.stringify(condition));
 
         return condition;
 
